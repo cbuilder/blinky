@@ -2,38 +2,66 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "inc/hw_memmap.h"
+//#include "inc/tm4c1294ncpdt.h"
+//#include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/rom.h"
-#include "CMSIS/Core/Include/cmsis_gcc.h"
+#include "cmsis_gcc.h"
+#include "core_cm4.h"
+//#include "core_cmFunc.h"
+#include "TM4C1294NCPDT.h"
+#include "gpio.c"
 
-int test_bss_counter;
+void psp_init(uint32_t stack_top)
+{
+    __set_PSP(stack_top);
+}
+
+void switch_psp()
+{
+    uint32_t control;
+    control = __get_CONTROL();
+    control |= 0x2; // PSP is the current stack pointer.
+    __set_CONTROL(control);
+}
+
+void pin_toggle(uint32_t ui32Port, uint8_t ui8Pins)
+{
+    if (ui8Pins & ROM_GPIOPinRead(ui32Port, ui8Pins))
+        ROM_GPIOPinWrite(ui32Port, ui8Pins, 0);
+    else
+        ROM_GPIOPinWrite(ui32Port, ui8Pins, ui8Pins);
+}
+
+void SysTick_Handler(void)
+{
+    ;
+    pin_toggle(GPION_BASE, 1);
+}
 
 int
 main(void)
 {
     volatile uint32_t ui32Loop;
-    uint32_t primask;
-    primask = __get_PRIMASK();
+    
     __set_PRIMASK(1);
-    // Enable the GPIO port that is used for the on-board LED.
-    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPION);
-    // Check if the peripheral access is enabled.
-    while(!ROM_SysCtlPeripheralReady(SYSCTL_PERIPH_GPION)) {
-        ;
-    }
+    //Start sysTickTimer
+    SysTick_Config(0x100000);
+    //Initialize timer interrupt
+    NVIC_EnableIRQ(SysTick_IRQn);
 
-    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTN_BASE, GPIO_PIN_1);
+    psp_init(0x20000000+0x400);
+    switch_psp();
+
+    gpio_pin_output();
+
+    __set_PRIMASK(0);
 
     while(1)
     {
-        ROM_GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_1, 0);
-        for(ui32Loop = 0; ui32Loop < 100000*test_bss_counter; ui32Loop++)
+        for(ui32Loop = 0; ui32Loop < 1000000; ui32Loop++)
             ;
-        ROM_GPIOPinWrite(GPIO_PORTN_BASE, GPIO_PIN_1 , GPIO_PIN_1);
-        for(ui32Loop = 0; ui32Loop < 100000; ui32Loop++)
-            ;
-	test_bss_counter+=1;
+        pin_toggle(GPION_BASE, 0x2);
     }
 }

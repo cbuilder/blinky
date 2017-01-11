@@ -31,7 +31,9 @@ PART=TM4C1294NCPDT
 # The library directories
 #
 TIVAWARE=/home/dima/workspace/tiva/lib/tivaware
-CMSIS=/home/dima/workspace/tiva/lib/CMSIS_5
+CMSIS=/home/dima/workspace/tiva/lib/CMSIS_5/CMSIS/Core/Include:\
+/home/dima/workspace/tiva/lib/CMSIS_5/Device/ARM/ARMCM4/Include:\
+/home/dima/workspace/tiva/lib
 
 #
 # Programmers and debuggers
