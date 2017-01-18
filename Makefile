@@ -75,6 +75,8 @@ ${COMPILER}:
 # Rules for building the blinky example.
 #
 ${COMPILER}/blinky.axf: ${COMPILER}/blinky.o
+${COMPILER}/blinky.axf: ${COMPILER}/task.o
+${COMPILER}/blinky.axf: ${COMPILER}/ps1.o
 ${COMPILER}/blinky.axf: ${COMPILER}/startup_${COMPILER}.o
 ${COMPILER}/blinky.axf: ${TIVAWARE}/driverlib/${COMPILER}/libdriver.a
 ${COMPILER}/blinky.axf: blinky.ld
